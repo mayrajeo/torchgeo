@@ -102,9 +102,8 @@ class TestSentinel2:
     def dataset(self) -> Sentinel2:
         root = os.path.join('tests', 'data', 'sentinel2')
         res = (10.0, 10.0)
-        bands = ['B02', 'B03', 'B04', 'B08']
         transforms = nn.Identity()
-        return Sentinel2(root, res=res, bands=bands, transforms=transforms)
+        return Sentinel2(root, res=res, transforms=transforms)
 
     def test_getitem(self, dataset: Sentinel2) -> None:
         x = dataset[dataset.bounds]

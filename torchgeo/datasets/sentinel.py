@@ -277,8 +277,11 @@ class Sentinel2(Sentinel):
     filename_regex = r"""
         ^T(?P<tile>\d{{2}}[A-Z]{{3}})
         _(?P<date>\d{{8}}T\d{{6}})
-        _(?P<band>B[018][\dA])
-        (?:_(?P<resolution>{}m))?
+        _(?:
+            (?P<band10>B0[2348])(?:_(?P<resolution10>10m))? |
+            (?P<band20>B0[1567]|B8A|B1[12])(?:_(?P<resolution20>20m))? |
+            (?P<band60>B09|B10)(?:_(?P<resolution60>60m))?
+        )
         \..*$
     """
     date_format = '%Y%m%dT%H%M%S'
@@ -299,6 +302,7 @@ class Sentinel2(Sentinel):
         'B11',
         'B12',
     )
+
     rgb_bands = ('B04', 'B03', 'B02')
 
     separate_files = True

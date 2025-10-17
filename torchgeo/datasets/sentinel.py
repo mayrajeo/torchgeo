@@ -277,13 +277,11 @@ class Sentinel2(Sentinel):
     filename_regex = r"""
         ^T(?P<tile>\d{{2}}[A-Z]{{3}})
         _(?P<date>\d{{8}}T\d{{6}})
-        _(?:
-            (?P<band10>B0[2348])(?:_(?P<resolution10>10m))? |
-            (?P<band20>B0[1567]|B8A|B1[12])(?:_(?P<resolution20>20m))? |
-            (?P<band60>B09|B10)(?:_(?P<resolution60>60m))?
-        )
+        _(?P<band>B[018][\dA])
+        (?:_(?P<resolution>{}m))?
         \..*$
     """
+
     date_format = '%Y%m%dT%H%M%S'
 
     # https://sentiwiki.copernicus.eu/web/s2-mission
@@ -302,6 +300,23 @@ class Sentinel2(Sentinel):
         'B11',
         'B12',
     )
+
+    # Native resolutions for each band
+    resolutions: ClassVar[dict[str, str]] = {
+        'B01': '20m',
+        'B02': '10m',
+        'B03': '10m',
+        'B04': '10m',
+        'B05': '20m',
+        'B06': '20m',
+        'B07': '20m',
+        'B08': '10m',
+        'B8A': '20m',
+        'B09': '60m',
+        'B10': '60m',
+        'B11': '20m',
+        'B12': '20m',
+    }
 
     rgb_bands = ('B04', 'B03', 'B02')
 
@@ -364,8 +379,7 @@ class Sentinel2(Sentinel):
             *root* was renamed to *paths*
         """
         bands = bands or self.all_bands
-        self.filename_glob = self.filename_glob.format(bands[0])
-
+        self.filename_glob = self.filename_glob.format(self.rgb_bands[0])
         if isinstance(res, int | float):
             res = (res, res)
 

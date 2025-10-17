@@ -540,6 +540,32 @@ class RasterDataset(GeoDataset):
                             start = match.start('band')
                             end = match.end('band')
                             filename = filename[:start] + band + filename[end:]
+                        if (
+                            hasattr(self, 'resolutions')
+                            and 'resolution' in match.groupdict()
+                            and match.groupdict()['resolution'] is not None
+                        ):
+                            start = match.start('resolution')
+                            end = match.end('resolution')
+                            filename = (
+                                filename[:start]
+                                + self.resolutions[band]
+                                + filename[end:]
+                            )
+                            folder_regex_str = r'^.*(?P<resolution>{}).*$'
+                            folder_regex_str = folder_regex_str.format(
+                                match.groupdict()['resolution']
+                            )
+                            folder_regex = re.compile(folder_regex_str, re.VERBOSE)
+                            folder_match = re.match(folder_regex, directory)
+                            if folder_match:
+                                start = folder_match.start('resolution')
+                                end = folder_match.end('resolution')
+                                directory = (
+                                    directory[:start]
+                                    + self.resolutions[band]
+                                    + directory[end:]
+                                )
                     filepath = os.path.join(directory, filename)
                     band_filepaths.append(filepath)
                 data_list.append(self._merge_files(band_filepaths, query))

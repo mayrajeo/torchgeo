@@ -303,7 +303,7 @@ class Sentinel2(Sentinel):
 
     # Native resolutions for each band
     resolutions: ClassVar[dict[str, str]] = {
-        'B01': '20m',
+        'B01': '60m',
         'B02': '10m',
         'B03': '10m',
         'B04': '10m',

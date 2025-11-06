@@ -3,6 +3,8 @@
 
 """Sentinel datasets."""
 
+import os
+import re
 from collections.abc import Callable, Iterable, Sequence
 from typing import Any, ClassVar
 
@@ -385,6 +387,47 @@ class Sentinel2(Sentinel):
 
         self.filename_regex = self.filename_regex.format(int(res[0]))
         super().__init__(paths, crs, res, bands, transforms, cache)
+
+    def _update_filepath(self, band: str, filepath: str) -> str:
+        """Update `filepath` to point to `band`.
+
+        Args:
+            band: band to search for.
+            filepath: base filepath to use for searching.
+
+        Returns:
+            updated filepath for `band`.
+        """
+        filename_regex = re.compile(self.filename_regex, re.VERBOSE)
+        filename = os.path.basename(filepath)
+        directory = os.path.dirname(filepath)
+        match = re.match(filename_regex, filename)
+        if match:
+            if 'band' in match.groupdict():
+                start = match.start('band')
+                end = match.end('band')
+                filename = filename[:start] + band + filename[end:]
+            if (
+                'resolution' in match.groupdict()
+                and match.groupdict()['resolution'] is not None
+            ):
+                start = match.start('resolution')
+                end = match.end('resolution')
+                filename = filename[:start] + self.resolutions[band] + filename[end:]
+                folder_regex_str = r'^.*(?P<resolution>{}).*$'
+                folder_regex_str = folder_regex_str.format(
+                    match.groupdict()['resolution']
+                )
+                folder_regex = re.compile(folder_regex_str, re.VERBOSE)
+                folder_match = re.match(folder_regex, directory)
+                if folder_match:
+                    start = folder_match.start('resolution')
+                    end = folder_match.end('resolution')
+                    directory = (
+                        directory[:start] + self.resolutions[band] + directory[end:]
+                    )
+        filepath = os.path.join(directory, filename)
+        return filepath
 
     def plot(
         self,
